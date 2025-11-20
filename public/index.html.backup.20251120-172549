@@ -2191,55 +2191,276 @@
                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
                        </tr>
-            if (type === 'producao') {
-                document.getElementById('modal-producao-title').textContent = 'Editar Lote de Produção';
-                document.getElementById('producao-id').value = id;
-                document.getElementById('producao-lote').value = item.lote;
-                document.getElementById('producao-sku').value = item.produtoId;
-                document.getElementById('producao-qtd').value = item.qtd;
-                document.getElementById('producao-data-entrega').value = dateToInput(item.dataEntrega);
-                document.getElementById('producao-status').value = item.status;
-                document.getElementById('producao-obs').value = item.observacoes || '';
-                document.getElementById('producao-mao-de-obra').value = item.custoMaoDeObra || 0;
-                
-                const insumosList = document.getElementById('producao-insumos-list');
-                insumosList.innerHTML = '';
-                if (item.insumosUtilizados) {
-                    item.insumosUtilizados.forEach(insumo => {
-                         const li = document.createElement('li');
-                         li.className = 'flex justify-between items-center bg-gray-50 p-2 rounded mb-2';
-                         li.dataset.id = insumo.id;
-                         li.dataset.qtd = insumo.qtd;
-                         li.dataset.custo = insumo.custoUnitario;
-                         li.dataset.totalcost = insumo.custoTotal;
-                         li.innerHTML = `
-                < span > ${ insumo.nome } (${ insumo.qtd } ${ insumo.unidade })</span >
-                    <div class="flex items-center">
-                        <span class="mr-4 text-sm text-gray-600">${currencyFormatter.format(insumo.custoTotal)}</span>
-                        <button type="button" class="text-red-600 hover:text-red-800" onclick="this.parentElement.parentElement.remove(); updateProductionCost()">Remover</button>
-                    </div>
-            `;
-                         insumosList.appendChild(li);
+                    </thead>
+                    <tbody id="producao-table" class="bg-white divide-y divide-gray-200">
+                    ${localDb.producao.map(p => `<tr>
+                        <td class="px-4 py-3 font-medium">${p.lote || '—'}</td>
+                        <td class="px-4 py-3">${formatDate(p.createdAt)}</td>
+                        <td class="px-4 py-3">${formatDate(p.dataEntrega)}</td>
+                        <td class="px-4 py-3">${p.sku}</td>
+                        <td class="px-4 py-3">${numberFormatter.format(p.qtd || 0)}</td>
+                        <td class="px-4 py-3">${currencyFormatter.format(p.custoPeca || 0)}</td>
+                        <td class="px-4 py-3">${p.status || 'Em Produção'}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <button onclick="window.openEditModal('${p.id}', 'producao')" class="text-indigo-600 hover:text-indigo-900">Editar</button>
+                            <button onclick="window.openDeleteModal('${p.id}', 'producao', 'Lote ${p.lote || ''}', '${p.financeiroId}')" class="text-red-600 hover:text-red-900 ml-4">Excluir</button>
+                        </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        function setupFilterListeners() {
+            // Os listeners são adicionados uma vez no renderDashboard ou na inicialização
+            // e não precisam ser reatribuídos aqui.
+        }
+
+        const asNumber = (elId, allowZero = false) => {
+            const val = Number((document.getElementById(elId)?.value || '0').toString().replace(',', '.'));
+            if (!allowZero && val <= 0) return NaN;
+            return val;
+        };
+
+        // ---- LÓGICA DE FORMULÁRIOS ----
+        function wireForms() {
+            // Novo Produto Avulso
+            document.getElementById('form-novo-produto').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showLoading(true);
+                const form = e.target;
+                const sku = document.getElementById('produto-sku').value.trim();
+                try {
+                    const custo = asNumber('produto-custo', true);
+                    const estoque = asNumber('produto-estoque-inicial', true);
+                    const minimo = asNumber('produto-estoque-minimo');
+                    if (isNaN(custo) || isNaN(estoque) || isNaN(minimo)) throw new Error("Valores numéricos inválidos. Estoque mínimo deve ser maior que zero.");
+
+                    await addDoc(dbRefs.produtos, {
+                        sku, custoUnitario: custo, qtdEstoque: estoque, estoqueMinimo: minimo,
+                        createdAt: serverTimestamp(),
                     });
+
+                    if (form.dataset.source === 'producao') {
+                        newlyCreatedProductSKU = sku;
+                    }
+                    showToast('Produto cadastrado!');
+                    closeModal('modal-novo-produto');
+                } catch (err) { showToast(err.message, 'error'); }
+                finally {
+                    form.reset();
+                    delete form.dataset.source;
+                    hideLoading();
                 }
-                updateProductionCost();
-                openModal('modal-nova-producao');
+            });
+
+            // Editar Produto
+            document.getElementById('form-editar-produto').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showLoading(true);
+                const produtoId = document.getElementById('edit-produto-id').value;
+                try {
+                    const custo = asNumber('edit-produto-custo', true);
+                    const estoque = asNumber('edit-produto-estoque', true);
+                    const minimo = asNumber('edit-produto-estoque-minimo');
+                    if (isNaN(custo) || isNaN(estoque) || isNaN(minimo)) throw new Error("Valores numéricos inválidos. Estoque mínimo deve ser maior que zero.");
+
+                    const produtoRef = doc(dbRefs.produtos, produtoId);
+                    await updateDoc(produtoRef, { custoUnitario: custo, qtdEstoque: estoque, estoqueMinimo: minimo });
+                    showToast('Produto atualizado!');
+                    closeModal('modal-editar-produto');
+                } catch (err) { showToast(err.message, 'error'); }
+                finally { hideLoading(); }
+            });
+
+            // Editar Insumo
+            document.getElementById('form-editar-insumo').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showLoading(true);
+                const insumoId = document.getElementById('edit-insumo-id').value;
+                try {
+                    const custo = asNumber('edit-insumo-custo', true);
+                    const estoque = asNumber('edit-insumo-estoque', true);
+                    const minimo = asNumber('edit-insumo-estoque-minimo', true);
+                    const produtoId = document.getElementById('venda-sku').value;
+                    const qtdVendida = asNumber('venda-qtd');
+                    const precoVenda = asNumber('venda-preco');
+
+                    try {
+                        if (isNaN(qtdVendida) || isNaN(precoVenda)) throw new Error("Quantidade e Preço devem ser maiores que zero.");
+
+                        await runTransaction(db, async (transaction) => {
+                            const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
+                            const produtoDoc = await transaction.get(produtoRef);
+                            if (!produtoDoc.exists()) throw new Error("Produto não encontrado.");
+                            const produtoData = produtoDoc.data();
+                            const estoqueAtual = produtoData.qtdEstoque || 0;
+                            if (estoqueAtual < qtdVendida) throw new Error(`Estoque insuficiente para ${produtoData.sku}. Apenas ${estoqueAtual} em estoque.`);
+
+                            const receitaLiquida = precoVenda * qtdVendida;
+                            const custoUnitario = produtoData.custoUnitario || 0;
+                            const lucro = receitaLiquida - (custoUnitario * qtdVendida);
+                            const cliente = document.getElementById('venda-cliente').value.trim();
+                            const dataStr = document.getElementById('venda-data').value;
+                            const createdAt = parseInputDate(dataStr) || serverTimestamp();
+                            if (!createdAt) throw new Error("Formato de data inválido. Use AAAA-MM-DD.");
+
+                            const sku = produtoData.sku;
+                            const financeiroRef = doc(collection(db, dbRefs.financeiro.path));
+                            const vendaRef = doc(collection(db, dbRefs.vendas.path));
+                            transaction.set(financeiroRef, {
+                                descricao: `Venda: ${qtdVendida}x ${sku} para ${cliente}`, tipo: 'entrada', categoria: 'Venda de Produto',
+                                valor: receitaLiquida, createdAt, isAutomatic: true, relatedDocId: vendaRef.id
+                            });
+                            transaction.set(vendaRef, {
+                                cliente, sku, qtd: qtdVendida, precoUnitario: precoVenda, receitaLiquida, lucro,
+                                status: document.getElementById('venda-status').value, createdAt,
+                                produtoId, custoUnitario, financeiroId: financeiroRef.id
+                            });
+                            transaction.update(produtoRef, { qtdEstoque: increment(-qtdVendida) });
+                        });
+                        showToast('Venda registrada com sucesso!');
+                        closeModal('modal-nova-venda');
+                    } catch (err) { showToast(err.message, 'error'); }
+                    finally { hideLoading(); }
+                });
+
+            // Nova Produção
+            document.getElementById('form-nova-producao').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const produtoId = document.getElementById('producao-sku').value;
+                const qtdProduzida = asNumber('producao-qtd');
+                const maoDeObra = asNumber('producao-mao-de-obra', true);
+                if (!produtoId || isNaN(qtdProduzida) || isNaN(maoDeObra)) {
+                    showToast('Preencha o produto, quantidade e mão de obra corretamente.', 'error');
+                    return;
+                }
+                showLoading(true);
+                const insumosUsados = Array.from(document.getElementById('producao-insumos-list').querySelectorAll('li')).map(item => ({
+                    id: item.dataset.id, qtd: parseFloat(item.dataset.qtd), custo: parseFloat(item.dataset.cost), nome: item.dataset.nome
+                }));
+                const status = document.getElementById('producao-status').value;
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        for (const insumo of insumosUsados) {
+                            const insumoRef = doc(db, dbRefs.insumos.path, insumo.id);
+                            const insumoDoc = await transaction.get(insumoRef);
+                            const insumoData = insumoDoc.data();
+                            if (!insumoDoc.exists() || (insumoData.qtdEstoque || 0) < insumo.qtd) {
+                                throw new Error(`Estoque insuficiente para ${insumoData.nome}. Apenas ${insumoData.qtdEstoque} em estoque.`);
+                            }
+                        }
+
+                        const selectedProduto = localDb.produtos.find(p => p.id === produtoId);
+                        if (!selectedProduto) throw new Error("O produto selecionado não foi encontrado.");
+
+                        const custoInsumos = insumosUsados.reduce((acc, i) => acc + (i.custo * i.qtd), 0);
+                        const custoTotalLote = (maoDeObra * qtdProduzida) + custoInsumos;
+                        const custoPeca = qtdProduzida > 0 ? custoTotalLote / qtdProduzida : 0;
+                        const createdAt = parseInputDate(document.getElementById('producao-data').value) || serverTimestamp();
+                        const dataEntrega = parseInputDate(document.getElementById('producao-data-entrega').value);
+                        if (!createdAt) throw new Error("Data do pedido inválida. Use AAAA-MM-DD.");
+
+                        const loteRef = doc(collection(db, dbRefs.producao.path));
+                        const financeiroRef = doc(collection(db, dbRefs.financeiro.path));
+
+                        transaction.set(financeiroRef, {
+                            descricao: `Custo do Lote ${document.getElementById('producao-lote').value}`, tipo: 'saida', categoria: 'Custo de Produção',
+                            valor: custoTotalLote, createdAt, isAutomatic: true, relatedDocId: loteRef.id
+                        });
+
+                        transaction.set(loteRef, {
+                            lote: document.getElementById('producao-lote').value, produtoId, sku: selectedProduto.sku, qtd: qtdProduzida,
+                            maoDeObraUnitaria: maoDeObra, custoPeca, custoTotal: custoTotalLote, status, insumos: insumosUsados,
+                            createdAt, dataEntrega, financeiroId: financeiroRef.id
+                        });
+
+                        for (const insumo of insumosUsados) {
+                            transaction.update(doc(db, dbRefs.insumos.path, insumo.id), { qtdEstoque: increment(-insumo.qtd) });
+                        }
+
+                        if (status === 'Recebido') {
+                            const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
+                            const produtoDoc = await transaction.get(produtoRef);
+                            const { qtdEstoque: oldQtd = 0, custoUnitario: oldCusto = 0 } = produtoDoc.data();
+                            const novoCustoMedio = oldQtd + qtdProduzida > 0 ? ((oldCusto * oldQtd) + custoTotalLote) / (oldQtd + qtdProduzida) : custoPeca;
+                            transaction.update(produtoRef, { qtdEstoque: increment(qtdProduzida), custoUnitario: novoCustoMedio });
+                        }
+                    });
+                    showToast('Lote de produção salvo com sucesso!');
+                    closeModal('modal-nova-producao');
+                } catch (err) { console.error(err); showToast(err.message, 'error'); }
+                finally { hideLoading(); }
+            });
+
+            // Editar Produção
+            document.getElementById('form-editar-producao').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showLoading(true);
+                const producaoId = document.getElementById('edit-producao-id').value;
+                const oldStatus = document.getElementById('edit-producao-old-status').value;
+                const newStatus = document.getElementById('edit-producao-status').value;
+                const dataEntrega = parseInputDate(document.getElementById('edit-producao-data-entrega').value);
+
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const producaoRef = doc(db, dbRefs.producao.path, producaoId);
+                        const producaoDoc = await transaction.get(producaoRef);
+                        if (!producaoDoc.exists()) throw new Error("Lote de produção não encontrado.");
+
+                        if (oldStatus === newStatus) {
+                            transaction.update(producaoRef, { dataEntrega });
+                            return;
+                        }
+
+                        const { produtoId, qtd, custoTotal } = producaoDoc.data();
+
+                        if (oldStatus === 'Em Produção' && newStatus === 'Recebido') {
+                            const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
+                            const produtoDoc = await transaction.get(produtoRef);
+                            if (!produtoDoc.exists()) throw new Error("Produto do lote não encontrado.");
+                            const { qtdEstoque: oldQtd = 0, custoUnitario: oldCusto = 0 } = produtoDoc.data();
+                            const novoCustoMedio = oldQtd + qtd > 0 ? ((oldCusto * oldQtd) + custoTotal) / (oldQtd + qtd) : (custoTotal / qtd);
+                            transaction.update(produtoRef, { qtdEstoque: increment(qtd), custoUnitario: novoCustoMedio });
+                        } else if (oldStatus === 'Recebido' && newStatus === 'Em Produção') {
+                            throw new Error("Não é possível reverter um lote 'Recebido' para 'Em Produção'.");
+                        }
+
+                        transaction.update(producaoRef, { status: newStatus, dataEntrega });
+                    });
+                    showToast("Produção atualizada!");
+                    closeModal('modal-editar-producao');
+                } catch (err) { showToast(err.message, 'error'); }
+                finally { hideLoading(); }
+            });
+        }
+
+        function openEditModal(id, type) {
+            const item = localDb[type + 's'].find(i => i.id === id);
+            if (!item) return;
+
+            if (type === 'producao') {
+                document.getElementById('edit-producao-id').value = id;
+                document.getElementById('edit-producao-produto-id').value = item.produtoId;
+                document.getElementById('edit-producao-old-qtd').value = item.qtd || 0;
+                document.getElementById('edit-producao-lote').textContent = item.lote;
+                document.getElementById('edit-producao-data-entrega').value = dateToInput(item.dataEntrega);
+                document.getElementById('edit-producao-status').value = item.status || 'Em Produção';
+                document.getElementById('edit-producao-old-status').value = item.status || 'Em Produção';
+                openModal('modal-editar-producao');
             } else if (type === 'produto') {
-                document.getElementById('modal-editar-produto-title').textContent = 'Editar Produto';
                 document.getElementById('edit-produto-id').value = id;
                 document.getElementById('edit-produto-sku').value = item.sku;
+                document.getElementById('edit-produto-custo').value = item.custoUnitario;
                 document.getElementById('edit-produto-estoque').value = item.qtdEstoque;
                 document.getElementById('edit-produto-estoque-minimo').value = item.estoqueMinimo;
-                document.getElementById('edit-produto-custo').value = item.custoUnitario;
                 openModal('modal-editar-produto');
             } else if (type === 'insumo') {
-                document.getElementById('modal-editar-insumo-title').textContent = 'Editar Matéria-Prima';
                 document.getElementById('edit-insumo-id').value = id;
                 document.getElementById('edit-insumo-nome').value = item.nome;
-                document.getElementById('edit-insumo-estoque').value = item.qtdEstoque;
                 document.getElementById('edit-insumo-unidade').value = item.unidade;
                 document.getElementById('edit-insumo-custo').value = item.custo;
-                document.getElementById('edit-insumo-fornecedor').value = item.fornecedor;
+                document.getElementById('edit-insumo-estoque').value = item.qtdEstoque;
                 document.getElementById('edit-insumo-estoque-minimo').value = item.estoqueMinimo;
                 openModal('modal-editar-insumo');
             } else if (type === 'financeiro') {
@@ -2255,6 +2476,7 @@
         }
         window.openEditModal = openEditModal;
 
+        // --- LÓGICA DO MODAL DE PRODUÇÃO ---
         let currentProductionCost = { total: 0, perPiece: 0 };
         const updateProductionCost = () => {
             const qtd = asNumber('producao-qtd', true) || 1;
@@ -2264,88 +2486,67 @@
                 custoTotalInsumos += parseFloat(item.dataset.totalcost);
             });
             const custoTotalLote = (custoMaoDeObra * qtd) + custoTotalInsumos;
-            const custoPorPeca = custoTotalLote / qtd;
-            
-            currentProductionCost = { total: custoTotalLote, perPiece: custoPorPeca };
-            
-            const totalEl = document.getElementById('producao-custo-total');
-            const perPieceEl = document.getElementById('producao-custo-peca');
-            if (totalEl) totalEl.textContent = currencyFormatter.format(custoTotalLote);
-            if (perPieceEl) perPieceEl.textContent = currencyFormatter.format(custoPorPeca);
+            currentProductionCost = { total: custoTotalLote, perPiece: custoTotalLote / qtd };
+            document.getElementById('producao-custo-total').textContent = currencyFormatter.format(currentProductionCost.total);
+            document.getElementById('producao-custo-peca').textContent = `${currencyFormatter.format(currentProductionCost.perPiece)} por peça`;
         };
 
         function wireProductionModal() {
-            const btnAddInsumo = document.getElementById('btn-add-insumo-producao');
-            if (btnAddInsumo) {
-                const newBtn = btnAddInsumo.cloneNode(true);
-                btnAddInsumo.parentNode.replaceChild(newBtn, btnAddInsumo);
-                
-                newBtn.addEventListener('click', () => {
-                    const select = document.getElementById('producao-insumo-select');
-                    const qtdInput = document.getElementById('producao-insumo-qtd');
-                    const option = select.options[select.selectedIndex];
-                    
-                    if (!option || !option.value || !qtdInput.value) {
-                        showToast('Selecione um insumo e informe a quantidade.', 'error');
-                        return;
-                    }
+            const addInsumoBtn = document.getElementById('btn-add-insumo-producao');
+            addInsumoBtn.addEventListener('click', () => {
+                const insumoSelect = document.getElementById('producao-insumo-select');
+                const insumoQtdInput = document.getElementById('producao-insumo-qtd');
+                const insumosList = document.getElementById('producao-insumos-list');
+                const selectedOption = insumoSelect.options[insumoSelect.selectedIndex];
+                const insumoId = selectedOption.value;
+                const qtd = parseFloat(insumoQtdInput.value);
 
-                    const insumoId = option.value;
-                    const qtd = parseFloat(qtdInput.value);
-                    const insumo = localDb.insumos.find(i => i.id === insumoId);
-                    
-                    if (!insumo) return;
+                if (!insumoId || !qtd || qtd <= 0) return showToast('Selecione um insumo e informe uma quantidade válida.', 'error');
+                const insumo = localDb.insumos.find(i => i.id === insumoId);
+                if (!insumo) return showToast('Insumo não encontrado.', 'error');
 
-                    const custoTotal = insumo.custo * qtd;
-                    
-                    const li = document.createElement('li');
-                    li.className = 'flex justify-between items-center bg-gray-50 p-2 rounded mb-2';
-                    li.dataset.id = insumoId;
-                    li.dataset.qtd = qtd;
-                    li.dataset.custo = insumo.custo;
-                    li.dataset.totalcost = custoTotal;
-                    li.innerHTML = `
-                < span > ${ insumo.nome } (${ qtd } ${ insumo.unidade })</span >
-                    <div class="flex items-center">
-                        <span class="mr-4 text-sm text-gray-600">${currencyFormatter.format(custoTotal)}</span>
-                        <button type="button" class="text-red-600 hover:text-red-800" onclick="this.parentElement.parentElement.remove(); updateProductionCost()">Remover</button>
-                    </div>
-                    `;
+                const totalCost = (insumo.custo || 0) * qtd;
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center bg-white p-2 rounded-md shadow-sm';
+                li.dataset.id = insumo.id; li.dataset.qtd = qtd; li.dataset.cost = insumo.custo || 0; li.dataset.totalcost = totalCost; li.dataset.nome = insumo.nome;
+                li.innerHTML = `<span>${qtd} ${insumo.unidade || 'un.'} de ${insumo.nome}</span><div class="flex items-center"><span class="mr-4 font-medium">${currencyFormatter.format(totalCost)}</span><button type="button" class="text-red-500 hover:text-red-700">&times;</button></div>`;
+                li.querySelector('button').addEventListener('click', () => { li.remove(); updateProductionCost(); });
+                insumosList.appendChild(li);
+                updateProductionCost();
+                insumoQtdInput.value = ''; insumoSelect.selectedIndex = 0;
+            });
 
-                    document.getElementById('producao-insumos-list').appendChild(li);
-                    select.value = "";
-                    qtdInput.value = "";
-                    updateProductionCost();
-                });
-            }
-
-            ['producao-qtd', 'producao-mao-de-obra'].forEach(id => {
-                document.getElementById(id)?.addEventListener('input', updateProductionCost);
+            document.getElementById('producao-qtd').addEventListener('input', updateProductionCost);
+            document.getElementById('producao-mao-de-obra').addEventListener('input', updateProductionCost);
+            document.getElementById('btn-novo-produto-from-producao').addEventListener('click', () => {
+                const form = document.getElementById('form-novo-produto');
+                form.reset();
+                form.dataset.source = 'producao';
+                openModal('modal-novo-produto');
             });
         }
 
+        // --- EVENTOS E INICIALIZAÇÃO DA PÁGINA ---
         document.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            const mm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            selectedMonth = mm;
+
+            showLoading();
             setupNavigation();
             setupModalClosers();
             setupFilterListeners();
-
-            renderFinanceiro();
-            renderEstoque();
-            renderInsumos();
-            renderProducao();
-            populateFormOptions();
-
-            updateProductionCost();
-
-            setupExportListeners();
+            setupExportListeners(); // Adicionado para os novos botões de exportação
             wireForms();
             wireProductionModal();
             bindTecidoUnidadeRadios();
 
+            // Reage à troca de tipo de insumo
             document.getElementById('insumo-tipo')?.addEventListener('change', () => {
                 updateInsumoForm();
             });
 
+            // Garante unidade correta e salva preferência no submit
             document.getElementById('form-nova-compra')?.addEventListener('submit', (e) => {
                 const tipo = document.getElementById('insumo-tipo')?.value;
                 if (tipo === 'tecido') {
