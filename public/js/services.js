@@ -213,32 +213,35 @@ export async function salvarProducao(dados) {
     const { produtoId, qtdProduzida, maoDeObra, insumosUsados, status, loteNome, createdAt, dataEntrega } = dados;
 
     await runTransaction(db, async (transaction) => {
-        // Valida Insumos
+        // 1. Validação de Stock de Insumos
         for (const insumo of insumosUsados) {
             const insumoRef = doc(db, dbRefs.insumos.path, insumo.id);
             const insumoDoc = await transaction.get(insumoRef);
             const iData = insumoDoc.data();
             if (!insumoDoc.exists() || (iData.qtdEstoque || 0) < insumo.qtd) {
-                throw new Error(`Estoque insuficiente para ${iData.nome}.`);
+                throw new Error(`Estoque insuficiente para ${iData.nome || 'Insumo'}.`);
             }
         }
 
         const selectedProduto = localDb.produtos.find(p => p.id === produtoId);
         if (!selectedProduto) throw new Error("Produto não encontrado.");
 
+        // 2. Cálculos Matemáticos
         const custoInsumos = insumosUsados.reduce((acc, i) => acc + (i.custo * i.qtd), 0);
-        // Custo total contábil (para valorização do estoque)
+
+        // Custo Total do Lote (Para valorização do Stock de Produtos Acabados)
+        // Soma dos materiais + mão de obra
         const custoTotalLote = (maoDeObra * qtdProduzida) + custoInsumos;
         const custoPeca = qtdProduzida > 0 ? custoTotalLote / qtdProduzida : 0;
 
-        // --- CORREÇÃO AQUI ---
-        // O valor que sai do CAIXA é apenas a Mão de Obra (assumindo pagamento por lote)
-        // Os insumos já foram pagos na compra.
+        // CORREÇÃO CONTABILÍSTICA:
+        // O valor que sai do CAIXA é apenas a Mão de Obra.
+        // Os insumos já foram pagos na compra (salvarCompra).
         const valorSaidaCaixa = maoDeObra * qtdProduzida;
 
         const loteRef = doc(collection(db, dbRefs.producao.path));
 
-        // Só cria registro financeiro se houver gasto com mão de obra
+        // 3. Registo Financeiro (Apenas se houver custo de Mão de Obra)
         let financeiroId = null;
         if (valorSaidaCaixa > 0) {
             const financeiroRef = doc(collection(db, dbRefs.financeiro.path));
@@ -248,13 +251,14 @@ export async function salvarProducao(dados) {
                 descricao: `Mão de Obra - Lote ${loteNome}`, // Descrição mais precisa
                 tipo: 'saida',
                 categoria: 'Custo de Produção (Mão de Obra)',
-                valor: valorSaidaCaixa, // Usa apenas o valor da mão de obra
+                valor: valorSaidaCaixa, // Apenas o valor da mão de obra sai do caixa
                 createdAt,
                 isAutomatic: true,
                 relatedDocId: loteRef.id
             });
         }
 
+        // 4. Registo do Lote de Produção
         transaction.set(loteRef, {
             lote: loteNome,
             produtoId,
@@ -262,24 +266,27 @@ export async function salvarProducao(dados) {
             qtd: qtdProduzida,
             maoDeObraUnitaria: maoDeObra,
             custoPeca,
-            custoTotal: custoTotalLote, // Mantém o custo total para fins de estoque
+            custoTotal: custoTotalLote, // Mantém o custo total para fins de relatório de custo
             status,
             insumos: insumosUsados,
             createdAt,
             dataEntrega,
-            financeiroId: financeiroId // Pode ser null se mão de obra for 0
+            financeiroId: financeiroId
         });
 
+        // 5. Baixa dos Insumos (Matéria-Prima)
         for (const insumo of insumosUsados) {
             transaction.update(doc(db, dbRefs.insumos.path, insumo.id), { qtdEstoque: increment(-insumo.qtd) });
         }
 
+        // 6. Entrada de Produtos Acabados (Se status for Recebido)
         if (status === 'Recebido') {
             const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
             const produtoDoc = await transaction.get(produtoRef);
             const { qtdEstoque: oldQtd = 0, custoUnitario: oldCusto = 0 } = produtoDoc.data();
 
-            // Fórmula do Custo Médio Ponderado
+            // Cálculo de Média Ponderada (Weighted Average Cost)
+            // (Valor Antigo + Valor Novo) / Quantidade Total
             const novoCustoMedio = oldQtd + qtdProduzida > 0
                 ? ((oldCusto * oldQtd) + custoTotalLote) / (oldQtd + qtdProduzida)
                 : custoPeca;
