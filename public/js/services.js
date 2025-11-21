@@ -222,84 +222,83 @@ export async function salvarVenda(dados) {
     });
 }
 
+// 3. Salvar Produção (CORRIGIDA: Leituras antes das Escritas)
 export async function salvarProducao(dados) {
     const { produtoId, qtdProduzida, maoDeObra, insumosUsados, status, loteNome, createdAt, dataEntrega } = dados;
 
     await runTransaction(db, async (transaction) => {
-        // 1. Validação de Stock de Insumos
+        // --- BLOCO DE LEITURAS (READS) ---
+        // 1. Ler e validar todos os insumos primeiro
+        const insumoLeituras = [];
         for (const insumo of insumosUsados) {
             const insumoRef = doc(db, dbRefs.insumos.path, insumo.id);
-            const insumoDoc = await transaction.get(insumoRef);
-            const iData = insumoDoc.data();
-            if (!insumoDoc.exists() || (iData.qtdEstoque || 0) < insumo.qtd) {
-                throw new Error(`Estoque insuficiente para ${iData.nome || 'Insumo'}.`);
+            const insumoDoc = await transaction.get(insumoRef); // Leitura
+
+            if (!insumoDoc.exists()) {
+                throw new Error(`Insumo não encontrado no banco de dados.`);
             }
+            const iData = insumoDoc.data();
+            if ((iData.qtdEstoque || 0) < insumo.qtd) {
+                throw new Error(`Estoque insuficiente para ${iData.nome}.`);
+            }
+            // Guardamos a referência e o dado para usar no bloco de escrita
+            insumoLeituras.push({ ref: insumoRef, data: iData, qtdDeduzir: insumo.qtd });
         }
 
+        // 2. Ler o Produto (necessário se o status for 'Recebido' para calcular custo médio)
+        const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
+        let produtoDoc = null;
+        if (status === 'Recebido') {
+            produtoDoc = await transaction.get(produtoRef); // Leitura
+            if (!produtoDoc.exists()) throw new Error("Produto final não encontrado.");
+        }
+
+        // --- CÁLCULOS (MEMÓRIA) ---
         const selectedProduto = localDb.produtos.find(p => p.id === produtoId);
-        if (!selectedProduto) throw new Error("Produto não encontrado.");
+        const skuProduto = selectedProduto ? selectedProduto.sku : (produtoDoc ? produtoDoc.data().sku : 'SKU Desconhecido');
 
-        // 2. Cálculos Matemáticos
         const custoInsumos = insumosUsados.reduce((acc, i) => acc + (i.custo * i.qtd), 0);
-
-        // Custo Total do Lote (Para valorização do Stock de Produtos Acabados)
-        // Soma dos materiais + mão de obra
         const custoTotalLote = (maoDeObra * qtdProduzida) + custoInsumos;
         const custoPeca = qtdProduzida > 0 ? custoTotalLote / qtdProduzida : 0;
 
-        // CORREÇÃO CONTABILÍSTICA:
-        // O valor que sai do CAIXA é apenas a Mão de Obra.
-        // Os insumos já foram pagos na compra (salvarCompra).
+        // Valor que sai do CAIXA (apenas mão de obra)
         const valorSaidaCaixa = maoDeObra * qtdProduzida;
 
+        // --- BLOCO DE ESCRITAS (WRITES) ---
         const loteRef = doc(collection(db, dbRefs.producao.path));
-
-        // 3. Registo Financeiro (Apenas se houver custo de Mão de Obra)
         let financeiroId = null;
+
+        // 3. Gravar Financeiro (se houver custo de mão de obra)
         if (valorSaidaCaixa > 0) {
             const financeiroRef = doc(collection(db, dbRefs.financeiro.path));
             financeiroId = financeiroRef.id;
 
             transaction.set(financeiroRef, {
-                descricao: `Mão de Obra - Lote ${loteNome}`, // Descrição mais precisa
+                descricao: `Mão de Obra - Lote ${loteNome}`,
                 tipo: 'saida',
                 categoria: 'Custo de Produção (Mão de Obra)',
-                valor: valorSaidaCaixa, // Apenas o valor da mão de obra sai do caixa
+                valor: valorSaidaCaixa,
                 createdAt,
                 isAutomatic: true,
                 relatedDocId: loteRef.id
             });
         }
 
-        // 4. Registo do Lote de Produção
+        // 4. Gravar o Lote
         transaction.set(loteRef, {
-            lote: loteNome,
-            produtoId,
-            sku: selectedProduto.sku,
-            qtd: qtdProduzida,
-            maoDeObraUnitaria: maoDeObra,
-            custoPeca,
-            custoTotal: custoTotalLote, // Mantém o custo total para fins de relatório de custo
-            status,
-            insumos: insumosUsados,
-            createdAt,
-            dataEntrega,
-            financeiroId: financeiroId
+            lote: loteNome, produtoId, sku: skuProduto, qtd: qtdProduzida,
+            maoDeObraUnitaria: maoDeObra, custoPeca, custoTotal: custoTotalLote, status,
+            insumos: insumosUsados, createdAt, dataEntrega, financeiroId
         });
 
-        // 5. Baixa dos Insumos (Matéria-Prima)
-        for (const insumo of insumosUsados) {
-            transaction.update(doc(db, dbRefs.insumos.path, insumo.id), { qtdEstoque: increment(-insumo.qtd) });
+        // 5. Atualizar estoque dos Insumos
+        for (const item of insumoLeituras) {
+            transaction.update(item.ref, { qtdEstoque: increment(-item.qtdDeduzir) });
         }
 
-        // 6. Entrada de Produtos Acabados (Se status for Recebido)
-        if (status === 'Recebido') {
-            const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
-            const produtoDoc = await transaction.get(produtoRef);
+        // 6. Atualizar estoque do Produto (se Recebido)
+        if (status === 'Recebido' && produtoDoc) {
             const { qtdEstoque: oldQtd = 0, custoUnitario: oldCusto = 0 } = produtoDoc.data();
-
-            // Cálculo de Média Ponderada (Weighted Average Cost)
-            // (Valor Antigo + Valor Novo) / Quantidade Total
             const novoCustoMedio = oldQtd + qtdProduzida > 0
                 ? ((oldCusto * oldQtd) + custoTotalLote) / (oldQtd + qtdProduzida)
                 : custoPeca;
