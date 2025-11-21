@@ -98,7 +98,10 @@ export async function deleteItem(id, type, financeiroId) {
         transaction.delete(itemRef);
         if (financeiroId) {
             const financeiroRef = doc(dbRefs.financeiro, financeiroId);
-            transaction.delete(financeiroRef);
+            const finDoc = await transaction.get(financeiroRef);
+            if (finDoc.exists()) {
+                transaction.delete(financeiroRef);
+            }
         }
     });
 }
@@ -224,21 +227,47 @@ export async function salvarProducao(dados) {
         if (!selectedProduto) throw new Error("Produto não encontrado.");
 
         const custoInsumos = insumosUsados.reduce((acc, i) => acc + (i.custo * i.qtd), 0);
+        // Custo total contábil (para valorização do estoque)
         const custoTotalLote = (maoDeObra * qtdProduzida) + custoInsumos;
         const custoPeca = qtdProduzida > 0 ? custoTotalLote / qtdProduzida : 0;
 
-        const loteRef = doc(collection(db, dbRefs.producao.path));
-        const financeiroRef = doc(collection(db, dbRefs.financeiro.path));
+        // --- CORREÇÃO AQUI ---
+        // O valor que sai do CAIXA é apenas a Mão de Obra (assumindo pagamento por lote)
+        // Os insumos já foram pagos na compra.
+        const valorSaidaCaixa = maoDeObra * qtdProduzida;
 
-        transaction.set(financeiroRef, {
-            descricao: `Custo do Lote ${loteNome}`, tipo: 'saida', categoria: 'Custo de Produção',
-            valor: custoTotalLote, createdAt, isAutomatic: true, relatedDocId: loteRef.id
-        });
+        const loteRef = doc(collection(db, dbRefs.producao.path));
+
+        // Só cria registro financeiro se houver gasto com mão de obra
+        let financeiroId = null;
+        if (valorSaidaCaixa > 0) {
+            const financeiroRef = doc(collection(db, dbRefs.financeiro.path));
+            financeiroId = financeiroRef.id;
+
+            transaction.set(financeiroRef, {
+                descricao: `Mão de Obra - Lote ${loteNome}`, // Descrição mais precisa
+                tipo: 'saida',
+                categoria: 'Custo de Produção (Mão de Obra)',
+                valor: valorSaidaCaixa, // Usa apenas o valor da mão de obra
+                createdAt,
+                isAutomatic: true,
+                relatedDocId: loteRef.id
+            });
+        }
 
         transaction.set(loteRef, {
-            lote: loteNome, produtoId, sku: selectedProduto.sku, qtd: qtdProduzida,
-            maoDeObraUnitaria: maoDeObra, custoPeca, custoTotal: custoTotalLote, status,
-            insumos: insumosUsados, createdAt, dataEntrega, financeiroId: financeiroRef.id
+            lote: loteNome,
+            produtoId,
+            sku: selectedProduto.sku,
+            qtd: qtdProduzida,
+            maoDeObraUnitaria: maoDeObra,
+            custoPeca,
+            custoTotal: custoTotalLote, // Mantém o custo total para fins de estoque
+            status,
+            insumos: insumosUsados,
+            createdAt,
+            dataEntrega,
+            financeiroId: financeiroId // Pode ser null se mão de obra for 0
         });
 
         for (const insumo of insumosUsados) {
@@ -249,7 +278,12 @@ export async function salvarProducao(dados) {
             const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
             const produtoDoc = await transaction.get(produtoRef);
             const { qtdEstoque: oldQtd = 0, custoUnitario: oldCusto = 0 } = produtoDoc.data();
-            const novoCustoMedio = oldQtd + qtdProduzida > 0 ? ((oldCusto * oldQtd) + custoTotalLote) / (oldQtd + qtdProduzida) : custoPeca;
+
+            // Fórmula do Custo Médio Ponderado
+            const novoCustoMedio = oldQtd + qtdProduzida > 0
+                ? ((oldCusto * oldQtd) + custoTotalLote) / (oldQtd + qtdProduzida)
+                : custoPeca;
+
             transaction.update(produtoRef, { qtdEstoque: increment(qtdProduzida), custoUnitario: novoCustoMedio });
         }
     });
