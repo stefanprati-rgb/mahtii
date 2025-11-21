@@ -8,24 +8,20 @@
         content="Sistema de gestão integrado para pequenos negócios de moda. Controle vendas, estoque, produção e financeiro em um só lugar.">
     <title>Sistema de Gestão - MAHTIÍ</title>
 
-    <!-- Bibliotecas Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- Fontes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- 1. CONEXÃO COM O CSS NOVO -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body class="antialiased">
     <div class="flex h-screen bg-gray-100">
-        <!-- Sidebar -->
         <aside id="sidebar"
             class="sidebar w-64 fixed lg:static top-0 left-0 h-full bg-white shadow-lg z-30 flex flex-col">
             <div class="px-6 py-4 border-b">
@@ -51,7 +47,7 @@
                 <a href="#producao" class="nav-link flex items-center py-2 px-4 rounded-lg">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z">
+                            d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z">
                         </path>
                     </svg>
                     Produção
@@ -90,10 +86,8 @@
             </nav>
         </aside>
 
-        <!-- Conteúdo Principal -->
         <div class="main-content flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-md p-4 flex justify-between items-center">
-                <!-- Botão Hamburger para Mobile -->
                 <button id="hamburger-btn"
                     class="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,21 +95,14 @@
                             d="M4 6h16M4 12h16m-7 6h7"></path>
                     </svg>
                 </button>
-                <!-- Breadcrumbs -->
                 <div id="breadcrumbs" class="text-sm text-gray-500">
                     <a href="#dashboard" class="hover:text-blue-600">Dashboard</a>
                 </div>
-                <div>
-                    <!-- Pode adicionar informações do usuário ou outros botões aqui -->
-                </div>
+                <div></div>
             </header>
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6 lg:p-8">
-                <!-- Seção Dashboard -->
                 <section id="dashboard" role="tabpanel" class="space-y-8">
-                    <div id="dashboard-content">
-                        <!-- Onboarding, Filtros e KPIs serão renderizados aqui -->
-                    </div>
-
+                    <div id="dashboard-content"></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                         <div class="card p-6 h-full flex flex-col">
                             <h3 class="text-xl font-semibold mb-4">Receita vs. Custos vs. Lucro</h3>
@@ -128,7 +115,6 @@
                     </div>
                 </section>
 
-                <!-- Seção Matéria-Prima (Insumos) -->
                 <section id="materiaprima" role="tabpanel" class="hidden space-y-6">
                     <div class="card p-6">
                         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
@@ -138,7 +124,6 @@
                                     class="btn-primary font-semibold py-2 px-4 rounded-md">Registrar Compra</button>
                             </div>
                         </div>
-                        <!-- Filtro por Fornecedor -->
                         <div class="mb-4">
                             <label for="insumo-filter-fornecedor"
                                 class="block text-sm font-medium text-gray-700">Filtrar por Fornecedor:</label>
@@ -147,13 +132,10 @@
                                 <option value="">Todos os Fornecedores</option>
                             </select>
                         </div>
-                        <div id="insumos-content">
-                            <!-- Conteúdo da tabela ou estado vazio será renderizado aqui -->
-                        </div>
+                        <div id="insumos-content"></div>
                     </div>
                 </section>
 
-                <!-- Seção Produção -->
                 <section id="producao" role="tabpanel" class="hidden space-y-6">
                     <div class="card p-6">
                         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
@@ -163,13 +145,10 @@
                                     class="btn-primary font-semibold py-2 px-4 rounded-md">Novo Lote</button>
                             </div>
                         </div>
-                        <div id="producao-content">
-                            <!-- Conteúdo da tabela ou estado vazio será renderizado aqui -->
-                        </div>
+                        <div id="producao-content"></div>
                     </div>
                 </section>
 
-                <!-- Seção Estoque (Produtos Acabados) -->
                 <section id="estoque" role="tabpanel" class="hidden space-y-6">
                     <div class="card p-6">
                         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
@@ -179,13 +158,10 @@
                                     class="btn-primary font-semibold py-2 px-4 rounded-md">Novo Produto Avulso</button>
                             </div>
                         </div>
-                        <div id="estoque-content">
-                            <!-- Conteúdo da tabela ou estado vazio será renderizado aqui -->
-                        </div>
+                        <div id="estoque-content"></div>
                     </div>
                 </section>
 
-                <!-- Seção Vendas -->
                 <section id="vendas" role="tabpanel" class="hidden space-y-6">
                     <div class="card p-6">
                         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
@@ -195,8 +171,6 @@
                                     class="btn-primary font-semibold py-2 px-4 rounded-md">Adicionar Venda</button>
                             </div>
                         </div>
-
-                        <!-- Filtros de Vendas -->
                         <div class="flex flex-wrap gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
                             <div class="flex-1 min-w-[200px]">
                                 <label for="vendas-filter-search" class="block text-sm font-medium text-gray-700">Buscar
@@ -217,8 +191,6 @@
                                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                             </div>
                         </div>
-
-                        <!-- Análise de Vendas -->
                         <div id="vendas-analytics" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
                             <div class="bg-blue-100 p-4 rounded-lg">
                                 <p class="text-sm font-medium text-blue-800">Total Vendido (Período)</p>
@@ -237,14 +209,10 @@
                             <h3 class="text-xl font-semibold mb-4">Top 5 Clientes por Receita</h3>
                             <div id="clientes-chart-card" class="h-80"></div>
                         </div>
-
-                        <div id="vendas-content">
-                            <!-- Conteúdo da tabela ou estado vazio será renderizado aqui -->
-                        </div>
+                        <div id="vendas-content"></div>
                     </div>
                 </section>
 
-                <!-- Seção Financeiro -->
                 <section id="financeiro" role="tabpanel" class="hidden space-y-6">
                     <div class="card p-6">
                         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
@@ -268,7 +236,6 @@
                                 <p id="financeiro-saldo" class="text-2xl font-bold text-blue-600">R$ 0,00</p>
                             </div>
                         </div>
-                        <!-- Filtros Financeiro -->
                         <div class="flex flex-wrap gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
                             <div class="flex-1 min-w-[200px]">
                                 <label for="financeiro-filter-search"
@@ -290,13 +257,10 @@
                                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                             </div>
                         </div>
-                        <div id="financeiro-content">
-                            <!-- Conteúdo da tabela ou estado vazio será renderizado aqui -->
-                        </div>
+                        <div id="financeiro-content"></div>
                     </div>
                 </section>
 
-                <!-- Seção Relatórios -->
                 <section id="relatorios" role="tabpanel" class="hidden space-y-6">
                     <div class="card p-6">
                         <h2 class="text-2xl font-bold text-gray-800 mb-6">Exportar Relatórios</h2>
@@ -333,12 +297,11 @@
         </div>
     </div>
 
-    <!-- Modals -->
-    <!-- Modal Nova Venda -->
     <div id="modal-nova-venda" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95">
             <h3 class="text-2xl font-bold mb-6">Registrar Nova Venda</h3>
             <form id="form-nova-venda" class="space-y-4">
+                <input type="hidden" id="venda-id">
                 <div>
                     <label for="venda-data" class="block text-sm font-medium text-gray-700">Data da Venda</label>
                     <input type="text" id="venda-data" placeholder="AAAA-MM-DD"
@@ -383,7 +346,6 @@
         </div>
     </div>
 
-    <!-- Modal Novo Produto Acabado -->
     <div id="modal-novo-produto" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95">
             <h3 class="text-2xl font-bold mb-6">Cadastrar Novo Produto</h3>
@@ -424,7 +386,6 @@
         </div>
     </div>
 
-    <!-- Modal Editar Produto Acabado -->
     <div id="modal-editar-produto"
         class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95">
@@ -435,15 +396,13 @@
                     <label for="edit-produto-sku" class="block text-sm font-medium text-gray-700">Nome do Produto
                         (SKU)</label>
                     <input type="text" id="edit-produto-sku"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100" readonly>
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                 </div>
                 <div>
                     <label for="edit-produto-custo" class="block text-sm font-medium text-gray-700">Custo Médio Unitário
                         (R$)</label>
                     <input type="number" step="0.01" id="edit-produto-custo" min="0"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
-                    <p class="mt-1 text-xs text-gray-500">Este é o custo médio ponderado, recalculado a cada lote de
-                        produção recebido. Edite apenas para ajustes manuais.</p>
                 </div>
                 <div>
                     <label for="edit-produto-estoque" class="block text-sm font-medium text-gray-700">Quantidade em
@@ -467,13 +426,11 @@
         </div>
     </div>
 
-    <!-- Modal Registrar Compra (Insumo) -->
     <div id="modal-nova-compra" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div
             class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95 max-h-[90vh] overflow-y-auto">
             <h3 class="text-2xl font-bold mb-6">Registrar Compra de Matéria-Prima</h3>
             <form id="form-nova-compra" class="space-y-4">
-                <!-- Tipo de Insumo (ComboBox) -->
                 <div>
                     <label for="insumo-tipo" class="block text-sm font-medium text-gray-700">Tipo de Item</label>
                     <select id="insumo-tipo" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
@@ -487,9 +444,7 @@
                     </select>
                 </div>
 
-                <!-- Campos Dinâmicos -->
                 <div id="dynamic-form-fields" class="space-y-4">
-                    <!-- Fields for Tecido Principal -->
                     <div id="fields-tecido" class="hidden space-y-4">
                         <div>
                             <label for="tecido-nome" class="block text-sm font-medium text-gray-700">Cor e Estampa (Nome
@@ -512,7 +467,6 @@
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                             <datalist id="fornecedores-list"></datalist>
                         </div>
-                        <!-- === ADICIONADO: Unidade (rádio) para TECIDO === -->
                         <div class="pt-2 border-t">
                             <p class="text-sm font-medium text-gray-700 mb-2">Unidade de Medida</p>
                             <div id="tecido-unidade-group" class="flex items-center gap-6">
@@ -527,114 +481,61 @@
                                     <span>Unidade</span>
                                 </label>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">Escolha a unidade que será usada para este tecido.</p>
                         </div>
-                        <!-- === ADICIONADO: Tamanhos da coleção === -->
                         <div>
                             <label for="collection-sizes" class="block text-sm font-medium text-gray-700">Tamanhos
                                 (separados por vírgula)</label>
                             <input type="text" id="collection-sizes" placeholder="PP, P, M, G, GG" value="P, M, G"
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                            <p class="mt-1 text-xs text-gray-500">Ex.: PP, P, M, G, GG — use vírgula para separar.</p>
                         </div>
                     </div>
 
-                    <!-- Fields for Linha de Costura -->
                     <div id="fields-linha" class="hidden space-y-4">
-                        <div>
-                            <label for="linha-nome" class="block text-sm font-medium text-gray-700">Cor da Linha</label>
-                            <input type="text" id="linha-nome"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div>
-                            <label for="linha-composicao" class="block text-sm font-medium text-gray-700">Tipo e
-                                Composição</label>
-                            <input type="text" id="linha-composicao" list="composicoes-linha-list"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                placeholder="Poliéster, algodão, etc.">
-                            <datalist id="composicoes-linha-list"></datalist>
-                        </div>
-                        <div>
-                            <label for="linha-espessura"
-                                class="block text-sm font-medium text-gray-700">Espessura/Número</label>
-                            <input type="text" id="linha-espessura"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div>
-                            <label for="linha-fornecedor"
-                                class="block text-sm font-medium text-gray-700">Fornecedor</label>
-                            <input type="text" id="linha-fornecedor" list="fornecedores-list"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">Cor da Linha</label><input
+                                type="text" id="linha-nome"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Tipo</label><input type="text"
+                                id="linha-composicao"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Espessura</label><input type="text"
+                                id="linha-espessura"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Fornecedor</label><input type="text"
+                                id="linha-fornecedor"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
                     </div>
-
-                    <!-- Fields for Botões -->
                     <div id="fields-botoes" class="hidden space-y-4">
-                        <div>
-                            <label for="botoes-nome" class="block text-sm font-medium text-gray-700">Cor e
-                                Acabamento</label>
-                            <input type="text" id="botoes-nome"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div>
-                            <label for="botoes-material"
-                                class="block text-sm font-medium text-gray-700">Material</label>
-                            <input type="text" id="botoes-material" list="materiais-botoes-list"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                placeholder="Plástico, madeira, etc.">
-                            <datalist id="materiais-botoes-list"></datalist>
-                        </div>
-                        <div>
-                            <label for="botoes-tamanho"
-                                class="block text-sm font-medium text-gray-700">Diâmetro/Tamanho</label>
-                            <input type="text" id="botoes-tamanho"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div>
-                            <label for="botoes-fornecedor"
-                                class="block text-sm font-medium text-gray-700">Fornecedor</label>
-                            <input type="text" id="botoes-fornecedor" list="fornecedores-list"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">Cor</label><input type="text"
+                                id="botoes-nome"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Material</label><input type="text"
+                                id="botoes-material"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Tamanho</label><input type="text"
+                                id="botoes-tamanho"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Fornecedor</label><input type="text"
+                                id="botoes-fornecedor"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
                     </div>
-
-                    <!-- Fields for Entretela -->
                     <div id="fields-entretela" class="hidden space-y-4">
-                        <div>
-                            <label for="entretela-nome" class="block text-sm font-medium text-gray-700">Nome/Referência
-                                da Entretela</label>
-                            <input type="text" id="entretela-nome"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div>
-                            <label for="entretela-tipo" class="block text-sm font-medium text-gray-700">Tipo de
-                                Entretela</label>
-                            <select id="entretela-tipo"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        <div><label class="block text-sm font-medium text-gray-700">Nome</label><input type="text"
+                                id="entretela-nome"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Tipo</label><select
+                                id="entretela-tipo" class="mt-1 block w-full border border-gray-300 p-2">
                                 <option>Termocolante</option>
                                 <option>Não termocolante</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="entretela-fornecedor"
-                                class="block text-sm font-medium text-gray-700">Fornecedor</label>
-                            <input type="text" id="entretela-fornecedor" list="fornecedores-list"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
+                            </select></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Fornecedor</label><input type="text"
+                                id="entretela-fornecedor" class="mt-1 block w-full border border-gray-300 p-2"></div>
                     </div>
-
-                    <!-- Fields for Outros (Original form) -->
                     <div id="fields-outros" class="hidden space-y-4">
-                        <div>
-                            <label for="outros-nome" class="block text-sm font-medium text-gray-700">Nome do
-                                Insumo</label>
-                            <input type="text" id="outros-nome"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">Nome</label><input type="text"
+                                id="outros-nome" class="mt-1 block w-full border border-gray-300 p-2"></div>
                     </div>
                 </div>
 
-                <!-- Campos Comuns -->
                 <div id="common-fields" class="hidden space-y-4 pt-4 border-t">
                     <div class="grid grid-cols-2 gap-4">
                         <div id="common-unidade-group">
@@ -645,8 +546,7 @@
                         <div>
                             <label for="insumo-custo"
                                 class="block text-sm font-medium text-gray-700">Custo/Unidade</label>
-                            <input type="number" step="0.01" id="insumo-custo" min="0"
-                                placeholder="R$ por unidade/metro"
+                            <input type="number" step="0.01" id="insumo-custo" min="0" placeholder="R$"
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
                         </div>
                     </div>
@@ -654,8 +554,7 @@
                         <div>
                             <label for="insumo-qtd-comprada" class="block text-sm font-medium text-gray-700">Qtd.
                                 Comprada</label>
-                            <input type="number" step="0.01" id="insumo-qtd-comprada" min="0" value="0"
-                                placeholder="Qtd."
+                            <input type="number" step="0.01" id="insumo-qtd-comprada" min="0"
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
                         </div>
                         <div>
@@ -665,8 +564,6 @@
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
                         </div>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500">🛈 Confira se a unidade de medida lançada corresponde à
-                        utilizada nos cadastros e na ficha técnica do produto (ex: ‘metros’ para tecido principal).</p>
                 </div>
 
                 <div class="flex justify-end space-x-4 pt-4">
@@ -678,7 +575,6 @@
         </div>
     </div>
 
-    <!-- Modal Editar Insumo -->
     <div id="modal-editar-insumo"
         class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95">
@@ -688,31 +584,31 @@
                 <div>
                     <label for="edit-insumo-nome" class="block text-sm font-medium text-gray-700">Nome do Insumo</label>
                     <input type="text" id="edit-insumo-nome"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100" readonly>
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                 </div>
                 <div>
                     <label for="edit-insumo-unidade" class="block text-sm font-medium text-gray-700">Unidade de
                         Medida</label>
-                    <input type="text" id="edit-insumo-unidade" class="mt-1 block w-full border border-gray-300 p-2"
-                        required>
+                    <input type="text" id="edit-insumo-unidade"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
                 </div>
                 <div>
                     <label for="edit-insumo-custo" class="block text-sm font-medium text-gray-700">Custo por Unidade
                         (R$)</label>
                     <input type="number" step="0.01" id="edit-insumo-custo" min="0"
-                        class="mt-1 block w-full border border-gray-300 p-2" required>
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
                 </div>
                 <div>
                     <label for="edit-insumo-estoque" class="block text-sm font-medium text-gray-700">Quantidade em
                         Estoque</label>
                     <input type="number" step="0.01" id="edit-insumo-estoque" min="0"
-                        class="mt-1 block w-full border border-gray-300 p-2" required>
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
                 </div>
                 <div>
                     <label for="edit-insumo-estoque-minimo" class="block text-sm font-medium text-gray-700">Estoque
                         Mínimo</label>
-                    <input type="number" step="0.01" id="edit-insumo-estoque-minimo" min="0"
-                        class="mt-1 block w-full border border-gray-300 p-2" required>
+                    <input type="number" step="0.01" id="edit-insumo-estoque-minimo" min="0" class="mt-1 block w-full border border-gray-300 
+rounded-md shadow-sm p-2" required>
                 </div>
                 <div class="flex justify-end space-x-4 pt-4">
                     <button type="button" onclick="closeModal('modal-editar-insumo')"
@@ -724,8 +620,6 @@
         </div>
     </div>
 
-
-    <!-- Modal Confirmar Exclusão -->
     <div id="modal-confirmar-exclusao"
         class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95">
@@ -741,8 +635,7 @@
                     <h3 class="text-xl font-bold">Confirmar Exclusão</h3>
                 </div>
             </div>
-            <p id="delete-confirm-message" class="text-gray-600 mb-6 ml-16">Tem certeza que deseja excluir este item?
-                Esta ação não pode ser desfeita.</p>
+            <p id="delete-confirm-message" class="text-gray-600 mb-6 ml-16">Tem certeza?</p>
             <div class="flex justify-end space-x-4">
                 <button type="button" onclick="closeModal('modal-confirmar-exclusao')"
                     class="font-semibold py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-100">Cancelar</button>
@@ -752,120 +645,71 @@
         </div>
     </div>
 
-
-    <!-- Modal Nova Produção -->
     <div id="modal-nova-producao"
         class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div
             class="card p-8 rounded-lg w-11/12 md:w-2/3 lg:w-1/2 modal-content transform scale-95 max-h-[90vh] overflow-y-auto">
             <h3 class="text-2xl font-bold mb-6">Registrar Lote de Produção</h3>
             <form id="form-nova-producao" class="space-y-6">
-                <!-- Seção 1: Detalhes do Lote -->
                 <div>
                     <h4 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">1. Detalhes do Lote</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label for="producao-lote" class="block text-sm font-medium text-gray-700">N° do
-                                Lote</label>
-                            <input type="text" id="producao-lote"
+                        <div><label class="block text-sm font-medium text-gray-700">N° do Lote</label><input type="text"
+                                id="producao-lote"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 bg-gray-100" readonly
-                                required>
+                                required></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Data do Pedido</label><input
+                                type="text" id="producao-data"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Data da Entrega</label><input
+                                type="text" id="producao-data-entrega"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                        <div class="lg:col-span-3"><label class="block text-sm font-medium text-gray-700">Produto
+                                (SKU)</label><select id="producao-sku"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required></select>
                         </div>
-                        <div>
-                            <label for="producao-data" class="block text-sm font-medium text-gray-700">Data do
-                                Pedido</label>
-                            <input type="text" id="producao-data" placeholder="AAAA-MM-DD"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required>
-                        </div>
-                        <div>
-                            <label for="producao-data-entrega" class="block text-sm font-medium text-gray-700">Data da
-                                Entrega</label>
-                            <input type="text" id="producao-data-entrega" placeholder="AAAA-MM-DD"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div class="lg:col-span-3">
-                            <div class="flex items-end gap-2">
-                                <div class="flex-grow">
-                                    <label for="producao-sku" class="block text-sm font-medium text-gray-700">Produto a
-                                        ser produzido (SKU)</label>
-                                    <select id="producao-sku"
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"
-                                        required></select>
-                                </div>
-                                <button type="button" id="btn-novo-produto-from-producao"
-                                    class="btn-secondary h-10 px-3 rounded-md shrink-0"
-                                    title="Cadastrar Novo Produto">+</button>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="producao-qtd" class="block text-sm font-medium text-gray-700">Quantidade
-                                Produzida</label>
-                            <input type="number" id="producao-qtd" min="1"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required>
-                        </div>
-                        <div>
-                            <label for="producao-mao-de-obra" class="block text-sm font-medium text-gray-700">Custo Mão
-                                de Obra (unitário)</label>
-                            <input type="number" id="producao-mao-de-obra" min="0" step="0.01" value="0"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required>
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">Qtd</label><input type="number"
+                                id="producao-qtd" min="1"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Mão de Obra</label><input
+                                type="number" id="producao-mao-de-obra" min="0" step="0.01"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required></div>
                     </div>
                 </div>
-
-                <!-- Seção 2: Insumos -->
                 <div>
                     <h4 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">2. Insumos Utilizados</h4>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <div class="md:col-span-2 grid grid-cols-3 gap-4">
-                                <div class="col-span-2">
-                                    <label for="producao-insumo-select"
-                                        class="block text-sm font-medium text-gray-700">Adicionar Insumo</label>
-                                    <select id="producao-insumo-select"
+                                <div class="col-span-2"><label class="block text-sm font-medium text-gray-700">Adicionar
+                                        Insumo</label><select id="producao-insumo-select"
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></select>
                                 </div>
-                                <div>
-                                    <label for="producao-insumo-qtd"
-                                        class="block text-sm font-medium text-gray-700">Quantidade</label>
-                                    <input type="number" id="producao-insumo-qtd" min="0.01" step="0.01"
-                                        placeholder="Qtd."
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">Qtd</label><input
+                                        type="number" id="producao-insumo-qtd"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
                             </div>
-                            <div class="md:col-span-2">
-                                <button type="button" id="btn-add-insumo-producao"
-                                    class="w-full btn-primary h-10 px-4 rounded-md">Adicionar Insumo à Lista</button>
-                            </div>
+                            <div class="md:col-span-2"><button type="button" id="btn-add-insumo-producao"
+                                    class="w-full btn-primary h-10 px-4 rounded-md">Adicionar</button></div>
                         </div>
-                        <ul id="producao-insumos-list" class="mt-4 space-y-2 max-h-40 overflow-y-auto">
-                            <!-- Insumos adicionados aparecerão aqui -->
-                        </ul>
+                        <ul id="producao-insumos-list" class="mt-4 space-y-2 max-h-40 overflow-y-auto"></ul>
                     </div>
                 </div>
-
-                <!-- Seção 3: Finalização -->
                 <div>
                     <h4 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">3. Resumo e Status</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                        <div>
-                            <label for="producao-status" class="block text-sm font-medium text-gray-700">Status do
-                                Lote</label>
-                            <select id="producao-status"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required>
+                        <div><label class="block text-sm font-medium text-gray-700">Status</label><select
+                                id="producao-status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
                                 <option>Em Produção</option>
                                 <option>Recebido</option>
-                            </select>
-                        </div>
+                            </select></div>
                         <div class="text-right">
-                            <p class="text-sm font-medium text-gray-700">Custo Total do Lote</p>
-                            <p id="producao-custo-total" class="text-2xl font-bold text-gray-800">R$ 0,00</p>
-                            <p id="producao-custo-peca" class="text-sm text-gray-500">R$ 0,00 por peça</p>
-                            <p class="mt-1 text-xs text-gray-500">🛈 O custo será incorporado ao estoque ao final do
-                                processo, atualizando o valor médio do produto.</p>
+                            <p class="text-sm font-medium text-gray-700">Custo Total: <span id="producao-custo-total">R$
+                                    0,00</span></p>
+                            <p class="text-sm text-gray-500" id="producao-custo-peca">R$ 0,00/peça</p>
                         </div>
                     </div>
                 </div>
-
                 <div class="flex justify-end space-x-4 pt-4 border-t mt-6">
                     <button type="button" onclick="closeModal('modal-nova-producao')"
                         class="font-semibold py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-100">Cancelar</button>
@@ -875,8 +719,6 @@
         </div>
     </div>
 
-
-    <!-- Modal Editar Produção -->
     <div id="modal-editar-producao"
         class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95">
@@ -891,13 +733,12 @@
                     <p id="edit-producao-lote" class="mt-1 block w-full p-2 bg-gray-100 rounded-md"></p>
                 </div>
                 <div>
-                    <label for="edit-producao-data-entrega" class="block text-sm font-medium text-gray-700">Data da
-                        Entrega</label>
+                    <label class="block text-sm font-medium text-gray-700">Data da Entrega</label>
                     <input type="text" id="edit-producao-data-entrega" placeholder="AAAA-MM-DD"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                 </div>
                 <div>
-                    <label for="edit-producao-status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
                     <select id="edit-producao-status"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
                         <option>Em Produção</option>
@@ -914,48 +755,29 @@
         </div>
     </div>
 
-    <!-- Modal Nova Transação Financeira -->
     <div id="modal-nova-transacao"
         class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop opacity-0">
         <div class="card p-8 rounded-lg w-11/12 md:w-1/2 lg:w-1/3 modal-content transform scale-95">
             <h3 id="modal-transacao-title" class="text-2xl font-bold mb-6">Adicionar Transação Manual</h3>
             <form id="form-nova-transacao" class="space-y-4">
                 <input type="hidden" id="transacao-id">
-                <div>
-                    <label for="transacao-data" class="block text-sm font-medium text-gray-700">Data</label>
-                    <input type="text" id="transacao-data" placeholder="AAAA-MM-DD"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                <div><label class="block text-sm font-medium text-gray-700">Data</label><input type="text"
+                        id="transacao-data" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required>
                 </div>
-                <div>
-                    <label for="transacao-descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
-                    <input type="text" id="transacao-descricao" placeholder="Ex: Aluguel, Compra de material"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
-                </div>
-                <div>
-                    <label for="transacao-tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
-                    <select id="transacao-tipo"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                <div><label class="block text-sm font-medium text-gray-700">Descrição</label><input type="text"
+                        id="transacao-descricao" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                        required></div>
+                <div><label class="block text-sm font-medium text-gray-700">Tipo</label><select id="transacao-tipo"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required>
                         <option value="entrada">Entrada</option>
                         <option value="saida">Saída</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="transacao-categoria" class="block text-sm font-medium text-gray-700">Categoria</label>
-                    <input type="text" id="transacao-categoria" list="categorias-list"
-                        placeholder="Ex: Despesa Fixa, Marketing"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
-                    <datalist id="categorias-list">
-                        <option value="Ajuste de Saldo Inicial"></option>
-                        <option value="Venda de Produto"></option>
-                        <option value="Matéria-Prima"></option>
-                        <option value="Custo de Produção"></option>
-                    </datalist>
-                </div>
-                <div>
-                    <label for="transacao-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                    <input type="number" step="0.01" id="transacao-valor" min="0"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
-                </div>
+                    </select></div>
+                <div><label class="block text-sm font-medium text-gray-700">Categoria</label><input type="text"
+                        id="transacao-categoria" list="categorias-list"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required></div>
+                <div><label class="block text-sm font-medium text-gray-700">Valor (R$)</label><input type="number"
+                        step="0.01" id="transacao-valor" min="0"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" required></div>
                 <div class="flex justify-end space-x-4 pt-4">
                     <button type="button" onclick="closeModal('modal-nova-transacao')"
                         class="font-semibold py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-100">Cancelar</button>
@@ -966,8 +788,6 @@
         </div>
     </div>
 
-
-    <!-- Loading Overlay -->
     <div id="loading-overlay" class="fixed inset-0 bg-white bg-opacity-75 z-50 flex items-center justify-center">
         <div class="text-center">
             <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -980,11 +800,7 @@
             <p id="loading-spinner" class="mt-2 text-lg font-semibold text-gray-700">Carregando dados...</p>
         </div>
     </div>
-
-    <!-- Toast Container -->
     <div id="toast-container" role="status" aria-live="polite" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
-
-    <!-- 2. CONEXÃO COM O SCRIPT NOVO -->
     <script type="module" src="js/app.js"></script>
 </body>
 

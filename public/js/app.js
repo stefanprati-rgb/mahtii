@@ -144,12 +144,14 @@ function wireForms() {
         finally { hideLoading(); }
     });
 
-    // 2. Nova Venda
+    // 2. Nova Venda (Atualizado para suportar edição)
     document.getElementById('form-nova-venda')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         showLoading(true);
         try {
+            const id = document.getElementById('venda-id').value; // Pega o ID oculto
             const dados = {
+                id: id, // Passa o ID para o serviço
                 produtoId: document.getElementById('venda-sku').value,
                 qtdVendida: asNumber('venda-qtd'),
                 precoVenda: asNumber('venda-preco'),
@@ -158,7 +160,7 @@ function wireForms() {
                 createdAt: parseInputDate(document.getElementById('venda-data').value) || Timestamp.now()
             };
             await salvarVenda(dados);
-            showToast('Venda realizada!');
+            showToast(id ? 'Venda atualizada!' : 'Venda realizada!');
             closeModal('modal-nova-venda');
         } catch (err) { showToast(err.message, 'error'); }
         finally { hideLoading(); }
@@ -233,13 +235,14 @@ function wireForms() {
         finally { hideLoading(); }
     });
 
-    // 6. Editar Produto
+    // 6. Editar Produto (Agora permite alterar SKU)
     document.getElementById('form-editar-produto')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         showLoading(true);
         try {
             const id = document.getElementById('edit-produto-id').value;
             const dados = {
+                sku: document.getElementById('edit-produto-sku').value.trim(),
                 custoUnitario: asNumber('edit-produto-custo', true),
                 qtdEstoque: asNumber('edit-produto-estoque', true),
                 estoqueMinimo: asNumber('edit-produto-estoque-minimo')
@@ -251,13 +254,14 @@ function wireForms() {
         finally { hideLoading(); }
     });
 
-    // 7. Editar Insumo
+    // 7. Editar Insumo (Agora permite alterar Nome)
     document.getElementById('form-editar-insumo')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         showLoading(true);
         try {
             const id = document.getElementById('edit-insumo-id').value;
             const dados = {
+                nome: document.getElementById('edit-insumo-nome').value.trim(),
                 unidade: document.getElementById('edit-insumo-unidade').value,
                 custo: asNumber('edit-insumo-custo', true),
                 qtdEstoque: asNumber('edit-insumo-estoque', true),

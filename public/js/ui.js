@@ -61,6 +61,11 @@ export function openModal(modalId) {
         document.getElementById('transacao-data').value = today;
     }
     if (modalId === 'modal-nova-venda') {
+        // Limpa ID para garantir que é nova venda
+        const idInput = document.getElementById('venda-id');
+        if (idInput) idInput.value = '';
+        const form = document.getElementById('form-nova-venda');
+        if (form) form.reset();
         document.getElementById('venda-data').value = today;
     }
 }
@@ -145,6 +150,16 @@ export function openEditModal(id, type) {
         document.getElementById('transacao-categoria').value = item.categoria;
         document.getElementById('transacao-valor').value = item.valor;
         openModal('modal-nova-transacao');
+    } else if (type === 'venda') {
+        // NOVA LÓGICA PARA VENDA
+        document.getElementById('venda-id').value = id; // Define o ID para edição
+        document.getElementById('venda-data').value = dateToInput(item.createdAt);
+        document.getElementById('venda-cliente').value = item.cliente;
+        document.getElementById('venda-sku').value = item.produtoId;
+        document.getElementById('venda-qtd').value = item.qtd;
+        document.getElementById('venda-preco').value = item.precoUnitario || (item.receitaLiquida / item.qtd);
+        document.getElementById('venda-status').value = item.status;
+        openModal('modal-nova-venda');
     }
 }
 
@@ -242,7 +257,8 @@ export function renderVendas() {
                     <td class="px-4 py-3">${numberFormatter.format(v.qtd)}</td>
                     <td class="px-4 py-3">${currencyFormatter.format(v.receitaLiquida)}</td>
                     <td class="px-4 py-3 text-sm font-medium">
-                        <button onclick="window.openDeleteModal('${v.id}', 'venda', 'Venda ${v.cliente}', '${v.financeiroId}')" class="text-red-600 hover:text-red-900">Excluir</button>
+                        <button onclick="window.openEditModal('${v.id}', 'venda')" class="text-indigo-600 hover:text-indigo-900">Editar</button>
+                        <button onclick="window.openDeleteModal('${v.id}', 'venda', 'Venda ${v.cliente}', '${v.financeiroId}')" class="text-red-600 ml-2">Excluir</button>
                     </td>
                 </tr>`).join('')}
             </tbody>
@@ -376,8 +392,8 @@ export function renderFinanceiro() {
                     <td class="px-4 py-3">${t.descricao}</td>
                     <td class="px-4 py-3 text-right font-medium ${t.tipo === 'entrada' ? 'text-green-600' : 'text-red-600'}">${t.tipo === 'saida' ? '-' : ''}${currencyFormatter.format(t.valor)}</td>
                     <td class="px-4 py-3 text-sm font-medium">
-                        <button ${t.isAutomatic ? 'disabled' : ''} onclick="${t.isAutomatic ? '' : `window.openEditModal('${t.id}', 'financeiro')`}" class="${t.isAutomatic ? 'text-gray-400' : 'text-indigo-600'}">Editar</button>
-                        <button ${t.isAutomatic ? 'disabled' : ''} onclick="${t.isAutomatic ? '' : `window.openDeleteModal('${t.id}', 'financeiro', '${t.descricao}')`}" class="${t.isAutomatic ? 'text-gray-400' : 'text-red-600 ml-2'}">Excluir</button>
+                        <button onclick="window.openEditModal('${t.id}', 'financeiro')" class="text-indigo-600 hover:text-indigo-900">Editar</button>
+                        <button onclick="window.openDeleteModal('${t.id}', 'financeiro', '${t.descricao}')" class="text-red-600 ml-2">Excluir</button>
                     </td>
                 </tr>`).join('')}
                 </tbody>

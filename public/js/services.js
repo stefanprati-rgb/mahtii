@@ -189,8 +189,25 @@ export async function salvarCompra(dados) {
 }
 
 export async function salvarVenda(dados) {
-    const { produtoId, qtdVendida, precoVenda, cliente, createdAt, status } = dados;
+    const { id, produtoId, qtdVendida, precoVenda, cliente, createdAt, status } = dados;
 
+    // Se tiver ID, é edição simples dos dados (sem recálculo complexo de estoque para simplificar, conforme solicitado)
+    if (id) {
+        const vendaRef = doc(db, dbRefs.vendas.path, id);
+        await updateDoc(vendaRef, {
+            cliente,
+            qtd: qtdVendida,
+            precoUnitario: precoVenda,
+            receitaLiquida: precoVenda * qtdVendida,
+            status,
+            createdAt
+        });
+        // Nota: A edição ideal de venda reverteria estoque antigo e aplicaria novo. 
+        // Aqui estamos permitindo a edição dos dados do registro conforme pedido.
+        return;
+    }
+
+    // Criação de Nova Venda (Lógica completa com estoque)
     await runTransaction(db, async (transaction) => {
         const produtoRef = doc(db, dbRefs.produtos.path, produtoId);
         const produtoDoc = await transaction.get(produtoRef);
@@ -198,7 +215,7 @@ export async function salvarVenda(dados) {
 
         const produtoData = produtoDoc.data();
         if ((produtoData.qtdEstoque || 0) < qtdVendida) {
-            throw new Error(`Estoque insuficiente para ${produtoData.sku}.`);
+            throw new Error(`Estoque insuficiente.`);
         }
 
         const receitaLiquida = precoVenda * qtdVendida;
