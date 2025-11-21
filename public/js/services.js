@@ -61,7 +61,7 @@ export function initializeAppListeners(onDataUpdateCallback) {
 
 // --- LÓGICA DE NEGÓCIO CRÍTICA ---
 
-// 1. Exclusão com Estorno
+// 1. Exclusão com Estorno (CORRIGIDA: Leituras antes das Escritas)
 export async function deleteItem(id, type, financeiroId) {
     const map = { venda: 'vendas', produto: 'produtos', insumo: 'insumos', producao: 'producao', financeiro: 'financeiro' };
     const colKey = map[type];
@@ -69,11 +69,24 @@ export async function deleteItem(id, type, financeiroId) {
 
     await runTransaction(db, async (transaction) => {
         const itemRef = doc(dbRefs[colKey], id);
+
+        // --- BLOCO DE LEITURAS (READS) ---
+        // O Firestore exige que TODAS as leituras sejam feitas antes de qualquer escrita
         const itemDoc = await transaction.get(itemRef);
 
-        if (!itemDoc.exists()) throw new Error("Item não encontrado. Talvez já excluído.");
+        let financeiroRef = null;
+        let finDoc = null;
 
+        // Se houver ID financeiro, lemos agora (antes de escrever qualquer coisa)
+        if (financeiroId) {
+            financeiroRef = doc(dbRefs.financeiro, financeiroId);
+            finDoc = await transaction.get(financeiroRef);
+        }
+
+        if (!itemDoc.exists()) throw new Error("Item não encontrado. Talvez já excluído.");
         const data = itemDoc.data();
+
+        // --- BLOCO DE ESCRITAS (WRITES) ---
 
         // Estorno Venda
         if (type === 'venda' && data.produtoId && data.qtd) {
@@ -89,19 +102,19 @@ export async function deleteItem(id, type, financeiroId) {
                     transaction.update(insumoRef, { qtdEstoque: increment(item.qtd) });
                 }
             }
+            // Se o lote já foi recebido, retira do estoque de produtos
             if (data.status === 'Recebido' && data.produtoId) {
                 const produtoRef = doc(dbRefs.produtos, data.produtoId);
                 transaction.update(produtoRef, { qtdEstoque: increment(-data.qtd) });
             }
         }
 
+        // Deletar o item principal
         transaction.delete(itemRef);
-        if (financeiroId) {
-            const financeiroRef = doc(dbRefs.financeiro, financeiroId);
-            const finDoc = await transaction.get(financeiroRef);
-            if (finDoc.exists()) {
-                transaction.delete(financeiroRef);
-            }
+
+        // Deletar o financeiro (se foi lido e existe)
+        if (finDoc && finDoc.exists()) {
+            transaction.delete(financeiroRef);
         }
     });
 }
