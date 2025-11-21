@@ -1,0 +1,206 @@
+:root {
+    --sidebar-width: 260px;
+    --primary-color: #1F2937;
+    /* Cinza escuro elegante */
+    --primary-hover: #111827;
+    --accent-color: #4F46E5;
+    /* Índigo suave para destaques */
+    --bg-body: #F3F4F6;
+    --surface: #FFFFFF;
+    --border-radius: 0.5rem;
+    /* Bordas levemente arredondadas */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: #374151;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Sidebar Elegante --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--surface);
+    border-right: 1px solid #E5E7EB;
+    transition: transform 0.3s ease-in-out;
+}
+
+.sidebar h1 {
+    color: var(--primary-color);
+    letter-spacing: -0.025em;
+}
+
+.nav-link {
+    color: #6B7280;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: #F9FAFB;
+    color: var(--primary-color);
+}
+
+.nav-link.active {
+    background-color: #F3F4F6;
+    color: var(--primary-color);
+    /* Texto escuro no ativo, clean */
+    font-weight: 600;
+    box-shadow: inset 4px 0 0 var(--primary-color);
+    /* Linha lateral discreta */
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    /* Arredondado só na direita */
+}
+
+/* --- Cards e Painéis --- */
+.card {
+    background-color: var(--surface);
+    border-radius: 1rem;
+    /* Cards mais arredondados */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    border: 1px solid #F3F4F6;
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* --- Botões Refinados --- */
+button {
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #FFFFFF;
+    transition: all 0.2s;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: #FFFFFF;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    transition: all 0.2s;
+    border-radius: var(--border-radius);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #F9FAFB;
+    border-color: #9CA3AF;
+}
+
+.btn-danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: #FECACA;
+}
+
+/* --- Tabelas Limpas --- */
+table thead th {
+    background-color: #F9FAFB;
+    color: #6B7280;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+table tbody tr {
+    transition: background-color 0.2s;
+}
+
+table tbody tr:hover {
+    background-color: #F9FAFB;
+}
+
+table td {
+    color: #374151;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+/* --- Utilitários --- */
+.main-content {
+    transition: margin-left 0.3s ease-in-out;
+    background-color: var(--bg-body);
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .sidebar {
+        transform: translateX(calc(var(--sidebar-width) * -1));
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+}
+
+.modal-backdrop {
+    background-color: rgba(17, 24, 39, 0.6);
+    /* Backdrop mais escuro e elegante */
+    backdrop-filter: blur(4px);
+    /* Efeito de blur no fundo */
+    transition: opacity 0.3s ease;
+}
+
+.modal-content {
+    transition: transform 0.3s ease;
+    border-radius: 1rem;
+}
+
+.toast {
+    transition: all 0.5s ease-in-out;
+    transform: translateY(20px);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.empty-state {
+    border: 2px dashed #E5E7EB;
+    background-color: #F9FAFB;
+    color: #6B7280;
+}
+
+/* Badge de Status na Produção */
+select.status-badge {
+    appearance: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+}
+
+/* Cores dinâmicas aplicadas via Tailwind no JS, mas base aqui se falhar */
